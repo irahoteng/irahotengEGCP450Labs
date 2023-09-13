@@ -1,0 +1,112 @@
+.thumb
+			.text			; Puts code in ROM
+; Port 1 Registers
+P1IN    	.word	0x40004C00		; Port 1 Input
+P1OUT   	.word	0x40004C02		; Port 1 Output
+P1DIR   	.word	0x40004C04		; Port 1 Direction
+P1REN   	.word	0x40004C06		; Port 1 Resistor Enable
+P1DS    	.word	0x40004C08		; Port 1 Drive Strength
+P1SEL0  	.word	0x40004C0A		; Port 1 Select 0
+P1SEL1  	.word	0x40004C0C		; Port 1 Select 1
+;delayms		.equ	0xE910
+			.global asm_main
+			.thumbfunc asm_main
+
+asm_main:	.asmfunc		; main
+	BL   	GPIO_Init
+	LDR  	R1, P1OUT               ; R0 = Red LED
+	LDR 	R2, P1IN				; P1 Input
+loop:
+	;B		delayloop
+	BL   	GPIO_Input
+	CMP		R0, #0x00				; Check if SW pressed (neg logic)
+	BEQ		LED_Toggle
+	B		TURN_ON_LED
+	B		loop			; return to loop
+
+delayloop:
+	mov				r3, #10
+out_loop:
+		mov			r0, #10000
+in_loop:
+		subs 		R0,#0x01
+		bne			in_loop
+
+		subs 		R3,#0x01
+		bne			out_loop
+		bx			lr
+					.endasmfunc
+
+
+LED_Toggle:
+	;PUSH	{R0}
+	LDRB	R0,[R1]
+	EOR		R0,#0x01 ;1 switch pressed and 0 switch not pressed
+	STRB	R0,[R1]
+	BL		delayloop
+	B		loop
+	;POP		{R0}
+
+TURN_ON_LED:
+	PUSH	{R3}					; Save context
+
+	MOV		R3, #0x11				; Need to set pins 4 and 0 to port 1
+	STRB	R3, [R1]
+
+	POP		{R3}					; Restore context
+	B		loop
+
+TURN_OFF_LED:
+	PUSH	{R3}					; Save context
+
+	MOV		R3, #0x10				; Need to set pin 4  to keep pull up
+	STRB	R3, [R1]
+
+	POP		{R3}					; Restore context
+	B		loop
+
+GPIO_Init:	.asmfunc
+	PUSH	{R0-R1}					; Save context
+
+	; Init P1 init
+	LDR 	R1, P1SEL0
+	LDRB	R0, [R1]
+	BIC		R0, R0, #0x11           ; Configure pins as GPIO
+	STRB	R0, [R1]
+
+	LDR		R1, P1SEL1
+	LDRB	R0, [R1]
+	BIC		R0, R0, #0x11           ; Configure pins as GPIO
+	STRB 	R0, [R1]
+
+	; Make pins output
+	LDR		R1, P1DIR
+	LDRB	R0, [R1]
+	BIC		R0, R0, #0x10          ; Set P1.4 as input (0)T
+	ORR		R0, R0, #0x01           ; Set P1.0 as output (1)
+	STRB	R0, [R1]
+
+	; Enable pull resistors on  P1.4
+    LDR  	R1, P1REN
+    LDRB 	R0, [R1]           ; Enable pull resistor
+    ORR		R0,#0x10
+    STRB 	R0, [R1]
+
+    ; Enable pull resistors on  P1.4
+    LDR  	R1, P1OUT
+    LDRB 	R0, [R1]
+    ORR  	R0, R0, #0x10           ; Enable pull-up resistor
+    STRB 	R0, [R1]
+
+    POP		{R0-R1}					; Restore context
+
+	BX   	LR
+			.endasmfunc
+
+GPIO_Input:	.asmfunc
+	; Get P1 input and return via R0
+	LDRB	R0, [R2]
+	ANDB 	R0, #0x10
+	BX   	LR
+			.endasmfunc
+	        .end
