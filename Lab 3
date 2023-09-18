@@ -1,0 +1,139 @@
+.thumb
+			.text			; Puts code in ROM
+; Port 1 Registers
+P4IN    	.word	0x40004C21		; Port 4 Input
+P4OUT   	.word	0x40004C23		; Port 4 Output
+P4DIR   	.word	0x40004C25		; Port 4 Direction
+P4DS    	.word	0x40004C29		; Port 4 Drive Strength
+P4SEL0  	.word	0x40004C2B		; Port 4 Select 0
+P4SEL1  	.word	0x40004C2D		; Port 4 Select 1
+P6IN    	.word	0x40004C41		; Port 5 Input
+P6OUT		.word	0x40004C43		;Port 5 Output
+P6DIR		.word	0x40004C45		;Port 5 direction
+P65DS		.word	0x40004C47		;Port 5  Drive Strength
+P6SEL0		.word	0x40004C4B		; Port 5 select 0
+P6SEL1		.word	0x40004C4D		; Port 5 select 1
+			.global asm_main
+			.thumbfunc asm_main
+
+asm_main:	.asmfunc		; main
+	BL   	GPIO_Init
+	LDR  	R1, P4OUT
+	LDR 	R2, P4IN
+	LDR		R3, P6OUT
+	LDR		R4, P6IN
+loop:
+	BL   	GPIO_Input
+	CMP		R0, #0x01	;Postive logic
+	BNE		LED_Toggle
+	B		TURN_ON_LED
+	B		loop			; return to loop
+
+delayloop:
+	mov				r3, #10
+out_loop:
+		mov			r0, #6250
+in_loop:
+		subs 		R0,#0x01
+		bne			in_loop
+
+		subs 		R3,#0x01
+		bne			out_loop
+		bx			lr
+					.endasmfunc
+
+
+LED_Toggle:
+	;PUSH	{R0}
+	LDRB	R0,[R1]
+	EOR		R0,#0x01 ;1 switch is not pressed and 0 switch is pressed
+	STRB	R0,[R1]
+	BL		delayloop
+	B		loop
+	;POP		{R0}
+
+TURN_ON_LED:
+	PUSH	{R3}					; Save context
+
+	MOV		R3, #0x01				; Need to set pins 4 and 0 to port 1
+	STRB	R3, [R1]
+
+	POP		{R3}					; Restore context
+	B		loop
+
+TURN_OFF_LED:
+	PUSH	{R3}					; Save context
+
+	MOV		R3, #0x01				; Need to set pin 4  to keep pull up
+	STRB	R3, [R1]
+
+	POP		{R3}					; Restore context
+	B		loop
+GPIO_Init:	.asmfunc
+	PUSH	{R0-R1}					; Save context
+
+	; Init P4 init
+	LDR 	R1, P4SEL0
+	LDRB	R0, [R1]
+	BIC		R0, R0, #0x01        ; Configure pins as GPIO
+	STRB	R0, [R1]
+
+	LDR		R1, P4SEL1
+	LDRB	R0, [R1]
+	BIC		R0, R0, #0x01       ; Configure pins as GPIO
+	STRB 	R0, [R1]
+
+	; Make pins output
+	LDR		R1, P4DIR
+	LDRB	R0, [R1]
+	;BIC		R0, R0, #0x10          ; Set P5.0 as input (0)T
+	ORR		R0, R0, #0x01          ; Set P4.0 as output (1)
+	STRB	R0, [R1]
+	POP		{R0-R1}
+	bx		lr
+
+	LDR     R1, P4OUT
+    LDRB    R0, [R1]
+    ORR     R0, R0, #0x01
+    STRB    R0, [R1]
+    POP   	{R0-R1}                    ; Restore context
+    BX        LR
+
+; Init P4 init
+	LDR 	R1, P6SEL0
+	LDRB	R0, [R1]
+	BIC		R0, R0, #0x01        ; Configure pins as GPIO
+	STRB	R0, [R1]
+
+	LDR		R1, P6SEL1
+	LDRB	R0, [R1]
+	BIC		R0, R0, #0x01       ; Configure pins as GPIO
+	STRB 	R0, [R1]
+
+	; Make pins output
+	LDR		R1, P6DIR
+	LDRB	R0, [R1]
+	BIC		R0, R0, #0x01          ; Set P5.0 as input (0)T
+	;ORR		R0, R0, #0x01          ; Set P4.0 as output (1)
+	STRB	R0, [R1]
+
+	LDR     R1, P6OUT
+    LDRB    R0, [R1]
+    BIC    	R0, R0, #0x01          ; Set P1.1 as input (0)
+    ;ORR        R0, R0, #0x01           ; Set P1.0 as output (1)
+    STRB    R0, [R1]
+     POP    {R0-R1}                    ; Restore context
+    BX        LR
+
+
+
+	BX   	LR
+			.endasmfunc
+
+GPIO_Input:	.asmfunc
+	; Get P4 input and return via R0
+	LDRB	R0, [R4]
+	ANDB 	R0, #0x01
+	BX   	LR
+			.endasmfunc
+	        .end
