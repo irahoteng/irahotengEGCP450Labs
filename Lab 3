@@ -7,12 +7,12 @@ P4DIR   	.word	0x40004C25		; Port 4 Direction
 P4DS    	.word	0x40004C29		; Port 4 Drive Strength
 P4SEL0  	.word	0x40004C2B		; Port 4 Select 0
 P4SEL1  	.word	0x40004C2D		; Port 4 Select 1
-P6IN    	.word	0x40004C41		; Port 5 Input
-P6OUT		.word	0x40004C43		;Port 5 Output
-P6DIR		.word	0x40004C45		;Port 5 direction
-P65DS		.word	0x40004C47		;Port 5  Drive Strength
-P6SEL0		.word	0x40004C4B		; Port 5 select 0
-P6SEL1		.word	0x40004C4D		; Port 5 select 1
+P6IN    	.word	0x40004C41		; Port 6 Input
+P6OUT		.word	0x40004C43		;Port 6 Output
+P6DIR		.word	0x40004C45		;Port 6 direction
+P65DS		.word	0x40004C47		;Port 6  Drive Strength
+P6SEL0		.word	0x40004C4B		; Port 6 select 0
+P6SEL1		.word	0x40004C4D		; Port 6 select 1
 			.global asm_main
 			.thumbfunc asm_main
 
