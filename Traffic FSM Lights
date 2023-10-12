@@ -1,0 +1,67 @@
+#include <stdint.h>
+#include "SysTick.h"
+#include "LEDInit.h"
+#include "Switches.h"
+#include "msp432p401r.h"
+//structure declaration
+struct Traffic {
+    uint32_t Out[2]; //Out is going to unsigned 32 bit integers
+    uint32_t Time; //10ms unsigned 32 bit integers
+    const struct Traffic *Next[8];//15 FSM
+
+};
+//typedef declared
+typedef const struct Traffic Traffic_Light;
+#define goN &FSM[0] //Cars headed North
+#define waitN &FSM[1] //Cars wait North
+#define goE &FSM[2] //Cars headed East
+#define waitE &FSM[3] //Cars wait East
+#define walk &FSM[4] //crosswalk button pressed
+#define walkR &FSM[5] //LED is solid red, NOT SAFE TO WALK
+#define walkRe &FSM[6] // LED is still red NOT SAFE TO WALK
+#define walkRed &FSM[7] // LED is still red NOT SAFE TO WALK
+#define walkStop0 &FSM[8] // LED is still red NOT SAFE TO WALK
+#define walkWait &FSM[9] //LED is still red NOT SAFE TO WALK
+#define walkGo0  &FSM[10] //Walk LED is Green
+#define walkGo1 &FSM[11] // Walk LED is Green
+#define walkStop1 &FSM[12] // LED is red again NOT SAFE TO WALK
+//FSM declaration
+Traffic_Light FSM[15] = {
+                          {{0x0C, 0x01}, 100,{goN,waitN,goN, waitN, walk, walk, walk, walk}}, //go North
+                          {{0x14, 0x01}, 40, {goE, goE, goE, goE,walk, walk ,walk, walk }},// wait North
+                            {{0x21, 0x01}, 120,{goE, goE, waitE, waitE, walk ,  walk, walk, walk}}, //go East
+                            {{0x22, 0x01},50, {goN, goN, goN,goN, walk , walk, walk, walk}}, //wait East
+                            //The rest of the states are given below
+                            {{0x24, 0x01},120,{walkR, walkR,walkR,walkR, walkR, walkR, walkR, walkR}},//RED LIGHT
+                            {{0X24, 0X01}, 120,{walkRe, walkRe, walkRe, walkRe, walkRe, walkRe, walkRe, walkRe}},//RED LIGHT
+                            {{0X24, 0X02}, 170,{walkRed, walkRed, walkRed, walkRed, walkRed, walkRed, walkRed, walkRed}},//GREEN LIGHT
+                            {{0X24, 0X00}, 95,{walkStop0, walkStop0, walkStop0, walkStop0, walkStop0, walkStop0, walkStop0, walkStop0}}, // NO LIGHT
+
+                            {{0X24, 0X01}, 95,{walkWait, walkWait, walkWait, walkWait, walkWait, walkWait, walkWait, walkWait}},//RED LIGHT
+                            {{0X24, 0X01}, 95,{walkGo0, walkGo0, walkGo0, walkGo0, walkGo0, walkGo0, walkGo0, walkGo0}},//NO LIGHT
+                            {{0X24, 0X01}, 95,{walkGo1, walkGo1, walkGo1, walkGo1, walkGo1, walkGo1, walkGo1, walkGo1}},//RED LIGHT
+
+                            {{0X24, 0X01}, 95,{walkStop1, walkStop1, walkStop1, walkStop1, walkStop1, walkStop1, walkStop1, walkStop1}}, // RED LIGHT
+                            {{0X24, 0X01}, 95,{goE, goE, goN, goN, goE, goE, goN, goE}}, //RED LIGHT
+                            {{0X24, 0X00}, 95,{goE, goE, goN, goN, goE, goE, goN, goE}},// NO LIGHT
+                            {{0X24, 0X02}, 95,{walkR, walkR, walkR, walkR, walkR, walkR, walkR, walkR}} //GREEN LIGHT
+                          };
+void main(void){
+    Traffic_Light *Pt; //Traffic_Lights function becomes pointer
+    //Switches();
+
+    uint32_t Input; //Input is going to unsigned 32 bit integers
+    GPIO_Init_p1_p2();
+    SysTick_Init();
+    GPIO_Init_p4();//main GPIO outputs
+    GPIO_Init_p5();//main GPIO inputs
+    Pt = goE;
+    while(1){
+        P4->OUT = (P4->OUT&~0x3F)|(Pt->Out[0]); //LEDs on breadboard will be set
+        P2->OUT = (P2->OUT&~0x03)|(Pt->Out[1]); //LEDs on MSP432 will be set(our crosswalk)
+        SysTick_Wait10ms(Pt->Time); //10ms SysTick
+        Input = (P5->IN&0x07);
+        Pt = Pt->Next[Input];//Input here
+    }
+
+}
