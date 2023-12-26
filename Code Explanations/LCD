@@ -1,0 +1,26 @@
+
+
+1. **ADC14.h and ADC14.c:**
+    - `ADC0_InitSWTriggerCh0`: Initializes the ADC for software-triggered sampling on channel 0 (P5.5/A0).
+    - `ADC_In`: Reads the ADC value from channel 0 after a conversion.
+
+2. **LCD.h and LCD.c:**
+    - Functions for initializing and interacting with an LCD display. Common LCD operations like clearing the display, outputting characters, strings, and numerical values in various formats (decimal, hexadecimal, fixed-point) are provided.
+
+3. **SysTickInts.h and SysTickInts.c:**
+    - `SysTick_Init`: Initializes the SysTick timer for periodic interrupts.
+    - `SysTick_Wait` and `SysTick_Wait10ms`: Implement busy-wait delays using the SysTick timer.
+
+4. **main.c:**
+    - `main`: The main function initializes the ADC, SysTick timer, and LCD.
+    - Inside the infinite loop, it continuously reads the ADC value, processes it (calculating distance in this case), and displays the result on the LCD.
+
+5. **Global Constants/Vars:**
+    - Constants like `BusFreq`, `T6us`, etc., are used for timing calculations.
+    - Global variables like `LCD_RS`, `LCD_E`, and `ADCvalue` are shared between functions.
+
+6. **Note:**
+    - It seems like there might be a calculation error in the distance calculation (`ADC = (ADC_In() * (Slope)-(Slope_Precision));`). The parentheses might need adjustment for correct order of operations.
+    - It's crucial to understand the specifics of the hardware (connections, configurations) to ensure correct functionality.
+
+Remember to check the documentation of the MSP432 and the peripherals used for a more detailed understanding of the code's functionality.
