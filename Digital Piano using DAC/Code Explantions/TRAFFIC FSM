@@ -1,0 +1,36 @@
+
+### `Traffic_Light` Structure:
+- The `Traffic_Light` structure represents the state of the traffic light at a particular moment.
+- It contains:
+  - `Out[2]`: An array of two 32-bit unsigned integers representing the output signals to control LEDs.
+  - `Time`: A 32-bit unsigned integer representing the duration of the current state in 10ms units.
+  - `Next[8]`: An array of pointers to other `Traffic_Light` structures, representing the possible next states based on input conditions.
+
+### State Definitions:
+- Various states for the traffic light and crosswalk are defined using constants like `goN`, `waitN`, `goE`, etc.
+- These states are initialized in the `FSM` array, each with specific output signals, time duration, and next state transitions.
+
+### `main` Function:
+- Initializes the GPIO (General Purpose Input/Output) pins for LEDs and switches.
+- Enters an infinite loop where it continuously updates the traffic light state based on input conditions (switches).
+- Uses SysTick to implement time delays.
+
+### `SysTick` Module:
+- Initializes the SysTick timer to provide time delay functionalities.
+- `SysTick_Wait` functions are used for busy-wait delays, and `SysTick_Wait10ms` waits for a specified number of 10ms intervals.
+
+### Switch Handling:
+- The `Switches` module is intended to handle GPIO initialization for switches, but the code related to it is commented out in the `main` function.
+
+### GPIO Initialization:
+- Functions in `LEDInit.c` and `Switches.c` initialize GPIO pins for LEDs and switches.
+
+### Overall Flow:
+1. The traffic light starts in a default state (`goE`).
+2. It continuously updates the state based on input conditions (switches) and progresses through the defined FSM.
+3. Outputs are updated to control the LEDs, and time delays are implemented using SysTick.
+
+### Note:
+- Some constants and functions mentioned in the comments (e.g., `Switches()` in `main`) are either commented out or missing from the provided code, so their exact functionality is not clear.
+
+This code seems to be part of an embedded system project where the MSP432 microcontroller is used to control a traffic light and crosswalk system. The FSM design allows for flexibility in defining and modifying the behavior of the system.
