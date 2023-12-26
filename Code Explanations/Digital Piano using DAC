@@ -1,0 +1,59 @@
+
+
+### `DAC.h`
+- **Purpose:**
+  - Manages the Digital-to-Analog Converter (DAC).
+- **Functions:**
+  - `DAC_Init(void)`: Initializes DAC GPIOs for specified ports.
+  - `DAC_Out(uint32_t data)`: Sends new data to DAC.
+
+### `DAC.c`
+- **Initialization:**
+  - Configures GPIO ports for DAC (pins 0-3).
+- **Data Output:**
+  - Sets DAC output based on input data.
+
+### `Piano.h`
+- **Purpose:**
+  - Handles piano-related operations.
+- **Functions:**
+  - `Piano_Init(void)`: Initializes GPIOs for Port 5.
+  - `char Piano_In(void)`: Reads piano inputs.
+
+### `Piano.c`
+- **Initialization:**
+  - Configures GPIOs for Port 5.
+- **Input Reading:**
+  - Reads and returns piano inputs.
+
+### `Sound.h`
+- **Purpose:**
+  - Manages sound-related functionalities.
+- **Functions:**
+  - `Sound_Init(void)`: Initializes sound components, including DAC.
+  - `Sound_Music(void)`: Plays a sequence of predefined musical samples.
+  - `Sound_Off(void)`: Turns off sound.
+
+### `Sound.c`
+- **Initialization:**
+  - Initializes DAC and sets up SysTick interrupts.
+- **Sound Generation:**
+  - Plays a predefined musical sequence using DAC.
+  - Provides a method to turn off sound.
+
+### `SysTickInts.h`
+- **SysTick Configuration:**
+  - Configures SysTick periodic interrupts.
+
+### `SysTickInts.c`
+- **SysTick Initialization:**
+  - Initializes SysTick periodic interrupts.
+
+### `main()`
+- **Main Program:**
+  - In an infinite loop, reads input from the piano.
+  - Adjusts SysTick `LOAD` value based on piano notes to control sound frequency.
+  - Default behavior turns off sound if no note is pressed.
+
+### **Summary:**
+This code ensemble manages a digital piano system. The DAC handles audio output, the piano interface reads input, and SysTick interrupts orchestrate sound generation. The main program interprets piano notes and adjusts sound frequency accordingly.
